@@ -1,14 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: plopl
- * Date: 24/03/2018
- * Time: 16:42
- */
-
-namespace App\Documents;
-
-
+namespace App\Document;
 use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
 
 /**
@@ -32,7 +23,7 @@ class ReportSMS
     protected $status;
 
     /**
-     * @MongoDB\Field(type="string")
+     * @MongoDB\Field(type="timestamp")
      */
     protected $timestamp;
 
