@@ -16,6 +16,8 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 
+
+
 /**
  * Class ApiController
  *
@@ -26,7 +28,7 @@ class ApiController extends FOSRestController
     // Report ADD
 
     /**
-     * @Rest\Put("/v1/report.{_format}", name="report_add", defaults={"_format":"json"})
+     * @Rest\Put("/v1/report", name="report_add")
      *
      * @SWG\Response(
      *     response=201,
@@ -102,6 +104,7 @@ class ApiController extends FOSRestController
         $serializer = $this->get('jms_serializer');
         $message = "";
         $report = [];
+
         try {
             $code = 201;
             $error = false;
@@ -112,12 +115,14 @@ class ApiController extends FOSRestController
                     /** @var Repository $repository */
                     $repository = $this->get('doctrine_mongodb')
                         ->getManager()
-                        ->getRepository('App:ReportSMS');
+                        ->getRepository(ReportSMS::class);
+
                     $timestamp = $request->request->get("timestamp", null);
                     $reference = $request->request->get("reference", null);
                     $status = $request->request->get("status", null);
                     $network = $request->request->get("network", null);
-                    $report = $repository->findOneBy(array('reference' => $reference));
+                    $report = $repository->findOneBy(array('reference'=>$reference));
+                    //$report = $repository->findOneBy(array('reference' => $reference));
                     if ($report == null) {
                         $report = new ReportSMS();
                     }
@@ -125,6 +130,7 @@ class ApiController extends FOSRestController
                     $report->setReference($reference);
                     $report->setTimestamp($timestamp);
                     $report->setStatus($status);
+
                     $this->get('doctrine_mongodb')->getManager()->persist($report);
                     $this->get('doctrine_mongodb')->getManager()->flush();
 
@@ -133,12 +139,14 @@ class ApiController extends FOSRestController
                     /** @var Repository $repository */
                     $repository = $this->get('doctrine_mongodb')
                         ->getManager()
-                        ->getRepository('App:ReportMail');
+                        ->getRepository(ReportMail::class);
+
                     $timestamp = $request->request->get("timestamp", null);
                     $reference = $request->request->get("reference", null);
                     $status = $request->request->get("status", null);
                     $client = $request->request->get("client", null);
                     $os = $request->request->get("os", null);
+
                     /** @var ReportMail $report */
                     $report = $repository->findOneBy(array('reference' => $reference));
                     if ($report == null) {
@@ -151,6 +159,7 @@ class ApiController extends FOSRestController
                     $report->setOs($os);
                     $this->get('doctrine_mongodb')->getManager()->persist($report);
                     $this->get('doctrine_mongodb')->getManager()->flush();
+
                     break;
                 default:
                     $code = 500;
