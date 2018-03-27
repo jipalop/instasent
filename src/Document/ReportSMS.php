@@ -33,6 +33,11 @@ class ReportSMS
     protected $network;
 
     /**
+     * @MongoDB\Field(type="string")
+     */
+    protected $client;
+
+    /**
      * @return mixed
      */
     public function getId()
@@ -111,4 +116,22 @@ class ReportSMS
     {
         $this->network = $network;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getClient()
+    {
+        return $this->client;
+    }
+
+    /**
+     * @param mixed $client
+     */
+    public function setClient($client)
+    {
+        $this->client = $client;
+    }
+
+
 }

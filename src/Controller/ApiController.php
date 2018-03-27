@@ -17,7 +17,6 @@ use Nelmio\ApiDocBundle\Annotation\Model;
 use Swagger\Annotations as SWG;
 
 
-
 /**
  * Class ApiController
  *
@@ -65,14 +64,6 @@ class ApiController extends FOSRestController
      * )
      *
      * @SWG\Parameter(
-     *     name="timestamp",
-     *     in="body",
-     *     type="string",
-     *     description="The report timestamp",
-     *     schema={}
-     * )
-     *
-     * @SWG\Parameter(
      *     name="network",
      *     in="body",
      *     type="string",
@@ -104,6 +95,7 @@ class ApiController extends FOSRestController
         $serializer = $this->get('jms_serializer');
         $message = "";
         $report = [];
+        $date = new \DateTime();
 
         try {
             $code = 201;
@@ -117,19 +109,47 @@ class ApiController extends FOSRestController
                         ->getManager()
                         ->getRepository(ReportSMS::class);
 
-                    $timestamp = $request->request->get("timestamp", null);
                     $reference = $request->request->get("reference", null);
                     $status = $request->request->get("status", null);
                     $network = $request->request->get("network", null);
-                    $report = $repository->findOneBy(array('reference'=>$reference));
-                    //$report = $repository->findOneBy(array('reference' => $reference));
+                    $client = $request->request->get("client", null);
+                    $report = $repository->findOneBy(array('reference' => $reference));
+
+                    if ($client == 'ProveedorA') {
+                        $date->setTimezone(new \DateTimeZone('Asia/Singapore'));
+                    } elseif ($client == 'ProveedorB') {
+                        $date->setTimezone(new \DateTimeZone('America/Toronto'));
+                    } else {
+                        $code = 500;
+                        $error = true;
+                        $message = "An error has occurred trying to process report - Error: invalid client";
+                        break;
+                    }
+
+
                     if ($report == null) {
                         $report = new ReportSMS();
                     }
+
+                    if($status== 'delivered') {
+
+                    } elseif ($status == 'undelivered') {
+
+                    } elseif ($status == 'failed') {
+
+                    } else {
+                        $code = 500;
+                        $error = true;
+                        $message = "An error has occurred trying to process report - Error: invalid status";
+                        break;
+                    }
+
+
                     $report->setNetwork($network);
                     $report->setReference($reference);
-                    $report->setTimestamp($timestamp);
+                    $report->setTimestamp($date->getTimestamp());
                     $report->setStatus($status);
+                    $report->setClient($client);
 
                     $this->get('doctrine_mongodb')->getManager()->persist($report);
                     $this->get('doctrine_mongodb')->getManager()->flush();
@@ -141,11 +161,21 @@ class ApiController extends FOSRestController
                         ->getManager()
                         ->getRepository(ReportMail::class);
 
-                    $timestamp = $request->request->get("timestamp", null);
                     $reference = $request->request->get("reference", null);
                     $status = $request->request->get("status", null);
                     $client = $request->request->get("client", null);
                     $os = $request->request->get("os", null);
+
+                    if ($client == 'ProveedorC') {
+                        $date->setTimezone(new \DateTimeZone('Europe/London'));
+                    } elseif ($client == 'ProveedorD') {
+                        $date->setTimezone(new \DateTimeZone('Africa/Tripoli'));
+                    } else {
+                        $code = 500;
+                        $error = true;
+                        $message = "An error has occurred trying to add new report - Error: invalid client";
+                        break;
+                    }
 
                     /** @var ReportMail $report */
                     $report = $repository->findOneBy(array('reference' => $reference));
@@ -154,7 +184,7 @@ class ApiController extends FOSRestController
                     }
                     $report->setStatus($status);
                     $report->setReference($reference);
-                    $report->setTimestamp($timestamp);
+                    $report->setTimestamp($date->getTimestamp());
                     $report->setClient($client);
                     $report->setOs($os);
                     $this->get('doctrine_mongodb')->getManager()->persist($report);

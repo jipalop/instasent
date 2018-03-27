@@ -34,7 +34,7 @@ doctrine_mongodb:
         default:
             server: mongodb://localhost:27017
             options: {}
-    default_database: hello_%kernel.environment%
+    default_database: '%env(resolve:MONGODB_DB)%'
     document_managers:
         default:
             mappings:
